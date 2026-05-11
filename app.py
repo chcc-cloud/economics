@@ -1,112 +1,144 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
-import plotly.express as px
 import os
+import plotly.express as px
 
-# 페이지 설정
-st.set_page_config(page_title="경제 지표 분석 대시보드", layout="wide")
+# 페이지 기본 설정 (가장 먼저 와야 함)
+st.set_page_config(page_title="공공데이터 경제 분석 대시보드", layout="wide")
 
-# 1. 데이터베이스 연결 확인
-DB_PATH = 'economics.db'
+# 🎈 제목
+st.title("📊 대한민국 경제 현황 대시보드")
+st.markdown("데이터 초보자도 쉽게 보는 경제 지표 분석입니다. 각 차트 아래에서 **사용된 SQL 코드**도 확인할 수 있어요!")
 
-if not os.path.exists(DB_PATH):
-    st.error(f"⚠️ '{DB_PATH}' 파일을 찾을 수 없습니다. DB 파일이 같은 폴더에 있는지 확인해주세요!")
-    st.stop()
+# 🛑 데이터베이스 파일 확인 (요청하신 친절한 에러 메시지)
+db_path = "economics.db"
+if not os.path.exists(db_path):
+    st.error("앗! 데이터베이스 파일을 찾을 수 없어요. 😢")
+    st.info("💡 해결 방법: 'app.py' 파일이 있는 폴더에 'economics.db' 파일이 함께 있는지 확인해주세요!")
+    st.stop() # 파일이 없으면 여기서 멈춤
 
-def run_query(query):
-    with sqlite3.connect(DB_PATH) as conn:
-        return pd.read_sql_query(query, conn)
+# 🔌 데이터베이스 연결 함수
+@st.cache_data # 데이터를 매번 다시 부르지 않게 기억(캐시)해두는 마법의 주문
+def load_data(query):
+    conn = sqlite3.connect(db_path)
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
 
-# 헤더 부분
-st.title("📊 대한민국 경제활동 현황 분석")
-st.markdown("공공데이터를 활용하여 경제 지표를 한눈에 파악하는 대시보드입니다.")
-st.divider()
+# 차트와 SQL을 예쁘게 보여주는 도우미 함수
+def display_chart_and_sql(title, question, chart_fig, sql_query):
+    st.subheader(title)
+    st.markdown(f"**궁금증:** {question}")
+    st.plotly_chart(chart_fig, use_container_width=True)
+    with st.expander("🔍 사용된 SQL 코드 보기"):
+        st.code(sql_query, language="sql")
+    st.divider()
 
-# --- 차트 1: 성별 취업·실업 비교 ---
-st.subheader("1. 남녀 간 취업·실업 격차는 얼마나 될까?")
-sql1 = "SELECT 성별, AVG(취업자) as 평균취업자, AVG(실업자) as 평균실업자 FROM 경제활동현황 WHERE 성별 != '계' GROUP BY 성별"
-df1 = run_query(sql1)
-
-col1_1, col1_2 = st.columns([2, 1])
-with col1_1:
-    fig1 = px.bar(df1, x="성별", y=["평균취업자", "평균실업자"], barmode="group", title="성별 고용 지표 비교")
-    st.plotly_chart(fig1, use_container_width=True)
-with col1_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql1, language='sql')
-
-# --- 차트 2: 실업률 시계열 추이 ---
-st.subheader("2. 시점별 실업률은 어떻게 변화했을까?")
-sql2 = "SELECT 시점, 실업률 FROM 경제활동현황 WHERE 성별 = '계'"
-df2 = run_query(sql2)
-df2['실업률'] = pd.to_numeric(df2['실업률'], errors='coerce') # TEXT를 숫자로 변환
-
-col2_1, col2_2 = st.columns([2, 1])
-with col2_1:
-    fig2 = px.line(df2, x="시점", y="실업률", markers=True, title="전체 실업률 변화 추이")
-    st.plotly_chart(fig2, use_container_width=True)
-with col2_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql2, language='sql')
-
-# --- 차트 3: 산업별 취업자 TOP 10 ---
-st.subheader("3. 어떤 산업에 취업자가 가장 많을까?")
-sql3 = "SELECT 산업별, AVG(취업자수) as 평균취업자수 FROM 산업별_취업자 GROUP BY 산업별 ORDER BY 평균취업자수 DESC LIMIT 10"
-df3 = run_query(sql3)
-
-col3_1, col3_2 = st.columns([2, 1])
-with col3_1:
-    fig3 = px.bar(df3, y="산업별", x="평균취업자수", orientation='h', title="산업별 취업자 TOP 10")
-    st.plotly_chart(fig3, use_container_width=True)
-with col3_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql3, language='sql')
-
-# --- 차트 4: 산업별 임금 vs 근로시간 ---
-st.subheader("4. 임금이 높은 산업이 근로시간도 길까?")
-sql4 = "SELECT 산업별, AVG(전체근로시간) as 근로시간, AVG(전체임금총액) as 임금 FROM 산업별_임금_및_근로시간 GROUP BY 산업별"
-df4 = run_query(sql4)
-
-col4_1, col4_2 = st.columns([2, 1])
-with col4_1:
-    fig4 = px.scatter(df4, x="근로시간", y="임금", text="산업별", size="임금", color="산업별", title="임금과 근로시간의 상관관계")
-    st.plotly_chart(fig4, use_container_width=True)
-with col4_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql4, language='sql')
-
-# --- 차트 5: 비경제활동 이유 분포 ---
-st.subheader("5. 사람들이 쉬고 있는 가장 큰 이유는?")
-sql5 = "SELECT * FROM 쉬었음의_주된_이유 ORDER BY 시점 DESC LIMIT 1"
-df5 = run_query(sql5).drop(columns=['시점'])
-# 데이터 재구성 (Pie 차트용)
-df5_melted = df5.melt(var_name="사유", value_name="인원")
-
-col5_1, col5_2 = st.columns([2, 1])
-with col5_1:
-    fig5 = px.pie(df5_melted, values="인원", names="사유", hole=0.4, title="최근 비경제활동 사유 분포")
-    st.plotly_chart(fig5, use_container_width=True)
-with col5_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql5, language='sql')
-
-# --- 차트 6: 경제활동 참가율 추이 ---
-st.subheader("6. 경제활동 참가율은 시간이 갈수록 늘고 있나?")
-sql6 = """
-SELECT A.시점, A.경제활동인구, B.비경제활동인구 
-FROM (SELECT 시점, 경제활동인구 FROM 경제활동현황 WHERE 성별='계') A
-JOIN 비경제활동인구 B ON A.시점 = B.시점
+# =======================================================
+# 📈 1. 성별 취업·실업 비교 (묶음 막대 차트)
+# =======================================================
+sql_1 = """
+SELECT 성별, SUM(취업자) AS 취업자, SUM(실업자) AS 실업자 
+FROM 경제활동현황 
+WHERE 성별 != '계' -- 전체 합계 데이터가 있다면 제외
+GROUP BY 성별
 """
-df6 = run_query(sql6)
-# 참가율 계산: (경제활동인구 / (경제활동인구 + 비경제활동인구)) * 100
-df6['참가율'] = (df6['경제활동인구'] / (df6['경제활동인구'] + df6['비경제활동인구'])) * 100
+df_1 = load_data(sql_1)
+# Plotly를 이용해 보기 좋게 데이터를 변형(Melt)해서 그립니다.
+df_1_melted = df_1.melt(id_vars='성별', value_vars=['취업자', '실업자'], var_name='상태', value_name='인원수')
+fig_1 = px.bar(df_1_melted, x='성별', y='인원수', color='상태', barmode='group', title="성별 취업자/실업자 비교")
+display_chart_and_sql("1. 성별 취업·실업 비교", "남녀 간 취업·실업 격차는 얼마나 될까?", fig_1, sql_1)
 
-col6_1, col6_2 = st.columns([2, 1])
-with col6_1:
-    fig6 = px.line(df6, x="시점", y=["경제활동인구", "비경제활동인구"], title="인구 구성 변화 추이")
-    st.plotly_chart(fig6, use_container_width=True)
-    st.caption("※ 경제활동인구와 비경제활동인구의 시점별 추이입니다.")
-with col6_2:
-    st.info("💡 **사용한 SQL**")
-    st.code(sql6, language='sql')
+
+# =======================================================
+# 📈 2. 실업률 시계열 추이 (꺾은선 차트)
+# =======================================================
+sql_2 = """
+SELECT 시점, AVG(CAST(실업률 AS REAL)) AS 평균실업률 
+FROM 경제활동현황 
+GROUP BY 시점 
+ORDER BY 시점
+"""
+df_2 = load_data(sql_2)
+fig_2 = px.line(df_2, x='시점', y='평균실업률', markers=True, title="연도/월별 평균 실업률 추이")
+display_chart_and_sql("2. 실업률 시계열 추이", "시점별 실업률은 어떻게 변화했을까?", fig_2, sql_2)
+
+
+# =======================================================
+# 📈 3. 산업별 취업자 TOP 10 (가로 막대 차트)
+# =======================================================
+sql_3 = """
+SELECT 산업별, SUM(취업자수) AS 총취업자수 
+FROM 산업별_취업자 
+GROUP BY 산업별 
+ORDER BY 총취업자수 DESC 
+LIMIT 10
+"""
+df_3 = load_data(sql_3)
+fig_3 = px.bar(df_3, x='총취업자수', y='산업별', orientation='h', title="취업자가 가장 많은 산업 TOP 10")
+fig_3.update_layout(yaxis={'categoryorder': 'total ascending'}) # 1등이 맨 위로 오게 뒤집기
+display_chart_and_sql("3. 산업별 취업자 TOP 10", "어떤 산업에 취업자가 가장 많을까?", fig_3, sql_3)
+
+
+# =======================================================
+# 📈 4. 산업별 임금 vs 근로시간 (산점도/버블 차트)
+# =======================================================
+sql_4 = """
+SELECT 산업별, AVG(전체근로시간) AS 평균근로시간, AVG(전체임금총액) AS 평균임금 
+FROM 산업별_임금_및_근로시간 
+GROUP BY 산업별
+"""
+df_4 = load_data(sql_4)
+fig_4 = px.scatter(df_4, x='평균근로시간', y='평균임금', text='산업별', size='평균임금', 
+                   color='산업별', title="산업별 평균 임금과 근로시간의 관계")
+fig_4.update_traces(textposition='top center') # 글자가 점 위에 오도록 설정
+display_chart_and_sql("4. 산업별 임금 vs 근로시간", "임금이 높은 산업이 근로시간도 길까?", fig_4, sql_4)
+
+
+# =======================================================
+# 📈 5. 비경제활동 이유 분포 (도넛 차트)
+# =======================================================
+sql_5 = """
+SELECT 
+    SUM("몸이 좋지 않아 쉬고 있음") AS "건강 문제",
+    SUM("퇴사(정년 퇴직)후 계속 쉬고 있음") AS "퇴사/정년",
+    SUM("일의 완료, 고용계약이 만료되어 쉬고 있음") AS "계약 만료",
+    SUM(CAST("직장의 휴업·폐업으로 쉬고 있음" AS INTEGER)) AS "휴업/폐업",
+    SUM("원하는 일자리(일거리)를 찾기 어려워 쉬고 있음") AS "구직 난항",
+    SUM("일자리(일거리)가 없어서 쉬고 있음") AS "일자리 없음",
+    SUM("다음 일 준비를 위해 쉬고 있음") AS "다음 일 준비",
+    SUM("기타") AS "기타"
+FROM 쉬었음의_주된_이유
+"""
+df_5 = load_data(sql_5)
+# 도넛 차트를 그리기 위해 데이터를 세로로 길게 변환(Melt)
+df_5_melted = df_5.melt(var_name='이유', value_name='인원수')
+fig_5 = px.pie(df_5_melted, names='이유', values='인원수', hole=0.4, title="사람들이 쉬고 있는 주된 이유")
+fig_5.update_traces(textposition='inside', textinfo='percent+label')
+display_chart_and_sql("5. 비경제활동 이유 분포", "사람들이 쉬고 있는 가장 큰 이유는?", fig_5, sql_5)
+
+
+# =======================================================
+# 📈 6. 경제활동 참가율 추이 (이중 꺾은선 차트)
+# =======================================================
+# 두 테이블을 '시점'을 기준으로 연결(JOIN)합니다.
+sql_6 = """
+SELECT A.시점, A.총경제활동인구, B.비경제활동인구
+FROM (
+    SELECT 시점, SUM(경제활동인구) AS 총경제활동인구 
+    FROM 경제활동현황 
+    GROUP BY 시점
+) A
+JOIN 비경제활동인구 B ON A.시점 = B.시점
+ORDER BY A.시점
+"""
+df_6 = load_data(sql_6)
+# 두 개의 선을 함께 그리기 위해 데이터 변환
+df_6_melted = df_6.melt(id_vars='시점', value_vars=['총경제활동인구', '비경제활동인구'], 
+                        var_name='구분', value_name='인구수')
+fig_6 = px.line(df_6_melted, x='시점', y='인구수', color='구분', markers=True, 
+                title="경제활동인구 vs 비경제활동인구 추이")
+display_chart_and_sql("6. 경제활동 참가율 추이", "비경제활동인구는 시간이 갈수록 늘고 있나?", fig_6, sql_6)
+
+st.success("🎉 모든 데이터 분석이 완료되었습니다! 고생하셨습니다.")
