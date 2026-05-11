@@ -2,12 +2,13 @@
 경영정보처리시스템 과제 2
 
 (1) 데이터 전처리시 사용한 제미나이와의 대화: https://gemini.google.com/share/4d1c41fe4961
-대시보드 작성 시 사용된 google ai studio 와의 대화:https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221jD1e1D7xYEC6JyFzjvr_Of9TXMgO57uG%22%5D,%22action%22:%22open%22,%22userId%22:%22107710567853435409926%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
+대시보드 작성 시 디버깅, 디자인 변경에 사용된 google ai studio 와의 대화:https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221jD1e1D7xYEC6JyFzjvr_Of9TXMgO57uG%22%5D,%22action%22:%22open%22,%22userId%22:%22107710567853435409926%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
 
 (2) 데이터 (데이터와 클린징 과정)와 시각화 결과 (차트 설명 및 인사이트)
 
 
 사용한 데이터 (6가지)
+이때, 연령은 15~29세로 통일한 채로 데이터를 다운로드 받았습니다(KOSIS)
   1. 산업별 임금 및 근로시간 데이터
   2. 산업별 취업자 수 데이터
   3. 성별, 연령별 취업자 수 데이터
