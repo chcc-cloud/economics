@@ -2,7 +2,7 @@
 경영정보처리시스템 과제 2
 
 (1) 데이터 전처리시 사용한 제미나이와의 대화: https://gemini.google.com/share/4d1c41fe4961
-대시보드 작성 시 사용된 google ai studio 와의 대화: https://drive.google.com/file/d/1hOUNArCQplJOaHacR54Hrwsv1Jf-EY82/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221jD1e1D7xYEC6JyFzjvr_Of9TXMgO57uG%22%5D,%22action%22:%22open%22,%22userId%22:%22107710567853435409926%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
+대시보드 작성 시 사용된 google ai studio 와의 대화:https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221jD1e1D7xYEC6JyFzjvr_Of9TXMgO57uG%22%5D,%22action%22:%22open%22,%22userId%22:%22107710567853435409926%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
 
 (2) 데이터 (데이터와 클린징 과정)와 시각화 결과 (차트 설명 및 인사이트)
 
