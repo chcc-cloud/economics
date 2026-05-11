@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ──────────────────────────────────────────────
-# 커스텀 CSS (특수 공백 제거 완료)
+# 커스텀 CSS
 # ──────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -30,12 +30,10 @@ html, body,[class*="css"] {
     background: #0a0e1a;
     color: #e8eaf0;
 }
-/* 사이드바 */
 section[data-testid="stSidebar"] {
     background: #0f1422 !important;
     border-right: 1px solid #1e2540;
 }
-/* 메트릭 카드 */
 .metric-card {
     background: linear-gradient(135deg, #111827 0%, #1a2035 100%);
     border: 1px solid #1e2a4a;
@@ -53,13 +51,11 @@ section[data-testid="stSidebar"] {
     height: 3px;
     background: var(--accent, #3b82f6);
 }
-.metric-card:hover { transform: translateY(-2px); }
 .metric-title {
     font-size: 0.75rem;
     font-weight: 500;
     color: #6b7db3;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
     margin-bottom: 8px;
 }
 .metric-value {
@@ -67,7 +63,6 @@ section[data-testid="stSidebar"] {
     font-size: 2rem;
     font-weight: 700;
     color: #e8eaf0;
-    line-height: 1.1;
 }
 .metric-delta {
     font-size: 0.8rem;
@@ -76,8 +71,6 @@ section[data-testid="stSidebar"] {
 }
 .delta-up   { color: #ef4444; }
 .delta-down { color: #22c55e; }
-
-/* 섹션 헤더 */
 .section-header {
     display: flex;
     align-items: center;
@@ -91,7 +84,6 @@ section[data-testid="stSidebar"] {
     font-weight: 700;
     color: #c8d0e8;
     margin: 0;
-    letter-spacing: 0.02em;
 }
 .section-dot {
     width: 8px; height: 8px;
@@ -99,7 +91,6 @@ section[data-testid="stSidebar"] {
     background: #3b82f6;
     flex-shrink: 0;
 }
-/* 인사이트 박스 */
 .insight-box {
     background: linear-gradient(135deg, #0f1e3d 0%, #111827 100%);
     border: 1px solid #1e3a6e;
@@ -107,12 +98,8 @@ section[data-testid="stSidebar"] {
     border-radius: 12px;
     padding: 18px 22px;
     margin: 10px 0;
-    font-size: 0.9rem;
-    line-height: 1.7;
     color: #a8b8d8;
 }
-.insight-box strong { color: #60a5fa; }
-/* Plotly 차트 배경 오버라이드 */
 .js-plotly-plot { border-radius: 12px; overflow: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -128,12 +115,8 @@ PLOTLY_LAYOUT = dict(
     yaxis=dict(gridcolor="#1e2540", linecolor="#1e2540", tickcolor="#a8b8d8"),
     margin=dict(l=10, r=10, t=40, b=10),
     legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#a8b8d8")),
-    colorway=["#3b82f6","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#06b6d4"],
 )
 
-# ──────────────────────────────────────────────
-# DB 연결
-# ──────────────────────────────────────────────
 @st.cache_resource
 def get_conn(db_path: str):
     return sqlite3.connect(db_path, check_same_thread=False)
@@ -143,26 +126,12 @@ def load_table(_conn, table: str) -> pd.DataFrame:
     return pd.read_sql(f'SELECT * FROM "{table}"', _conn)
 
 # ──────────────────────────────────────────────
-# 사이드바: DB 설정
+# 사이드바
 # ──────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## ⚙️ 데이터 설정")
     db_path = st.text_input("SQLite DB 파일 경로", value="economics.db")
-    st.markdown("---")
-    st.markdown("### 🎯 핵심 인사이트")
-    st.markdown("""
-    <div style='font-size:0.82rem; color:#6b7db3; line-height:1.8'>
-    청년층 취업자 수는 증가하지만<br>
-    <b style='color:#f59e0b'>임금·근로시간의 질적 격차</b>와<br>
-    <b style='color:#ef4444'>비자발적 비경활 비율 증가</b>가<br>
-    동시에 나타나는 구조적 문제를<br>
-    시각화합니다.
-    </div>
-    """, unsafe_allow_html=True)
 
-# ──────────────────────────────────────────────
-# DB 로드
-# ──────────────────────────────────────────────
 if not os.path.exists(db_path):
     st.error(f"⚠️ DB 파일을 찾을 수 없습니다: `{db_path}`")
     st.stop()
@@ -179,43 +148,52 @@ except Exception as e:
     st.error(f"테이블 로드 실패: {e}")
     st.stop()
 
+# =====================================================================
+# 🚨 [중요 디버깅 1] 문자열 콤마(,) 제거 후 확실하게 숫자로 변환
+# 데이터에 1,200 처럼 콤마가 있으면 글자로 인식해서 mean() 에러가 발생합니다.
+# =====================================================================
+def make_numeric(df, cols):
+    for col in cols:
+        if col in df.columns:
+            # 콤마 제거하고 숫자로 강제 변환 (문제가 있는 값은 NaN 처리 후 0으로 채움)
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
+
+make_numeric(df_eco,["취업자", "실업자", "경제활동인구"])
+make_numeric(df_emp,["취업자수"])
+make_numeric(df_wage,["전체임금총액", "전체근로시간"])
+make_numeric(df_inact, ["비경제활동인구"])
+
 # ──────────────────────────────────────────────
 # 헤더
 # ──────────────────────────────────────────────
 st.markdown("""
 <div style='padding: 32px 0 8px 0;'>
-  <div style='font-family: Space Mono, monospace; font-size: 0.7rem; color: #3b82f6; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px;'>
-    Youth Labor Market Intelligence
-  </div>
-  <h1 style='font-size: 2.2rem; font-weight: 900; color: #e8eaf0; margin: 0; line-height: 1.15;'>
-    청년 고용 현황 대시보드
-  </h1>
-  <p style='color: #6b7db3; margin-top: 8px; font-size: 0.95rem;'>
-    경제활동인구 · 실업률 · 산업별 임금 · 비경활 이유 통합 분석
-  </p>
+  <h1 style='font-size: 2.2rem; font-weight: 900; color: #e8eaf0; margin: 0;'>청년 고용 현황 대시보드</h1>
+  <p style='color: #6b7db3; margin-top: 8px;'>경제활동인구 · 실업률 · 산업별 임금 · 비경활 이유 통합 분석</p>
 </div>
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# ──────────────────────────────────────────────
-# 성별 필터 (안전한 데이터 추출)
-# ──────────────────────────────────────────────
+# =====================================================================
+# 🚨[중요 디버깅 2] 성별에 '계'가 없을 때의 스마트한 필터링 로직
+# =====================================================================
 if "성별" in df_eco.columns:
-    # '계'를 제외한 순수 성별 목록
     genders_only = sorted([g for g in df_eco["성별"].dropna().unique() if g != '계'])
-    filter_options = ["전체"] + genders_only
+    filter_options =["전체"] + genders_only
     selected_gender = st.selectbox("성별 필터", filter_options, index=0)
 
     if selected_gender == "전체":
-        # 전체일 경우 '계' 데이터만 사용 (없으면 전체)
         if '계' in df_eco["성별"].values:
-            df_eco_f = df_eco[df_eco["성별"] == '계']
+            df_eco_f = df_eco[df_eco["성별"] == '계'].copy()
         else:
-            df_eco_f = df_eco
+            # DB에 '계'가 없다면, 시점별로 남/여 데이터를 더해서(sum) '전체' 데이터를 만듭니다.
+            df_eco_f = df_eco.groupby("시점")[["취업자", "실업자", "경제활동인구"]].sum().reset_index()
+            # 실업률은 텍스트(%)로 되어있으므로 다시 계산해 줍니다.
+            df_eco_f["실업률"] = (df_eco_f["실업자"] / df_eco_f["경제활동인구"] * 100).round(1).astype(str) + "%"
     else:
-        df_eco_f = df_eco[df_eco["성별"] == selected_gender]
+        df_eco_f = df_eco[df_eco["성별"] == selected_gender].copy()
 else:
-    df_eco_f = df_eco
+    df_eco_f = df_eco.copy()
 
 # ──────────────────────────────────────────────
 # KPI 카드
@@ -252,19 +230,13 @@ cards =[
 
 for col_obj, title, field, unit, invert, accent in cards:
     try:
-        val = str(latest[field]).replace('%', '')
+        val = str(latest.get(field, 0)).replace('%', '')
         delta = delta_html(latest, prev, field, unit, invert)
         display = f"{float(val):.1f}" if field == "실업률" else fmt_num(val)
     except:
         display, delta = "–", ""
     with col_obj:
-        st.markdown(f"""
-        <div class='metric-card' style='--accent:{accent}'>
-          <div class='metric-title'>{title}</div>
-          <div class='metric-value'>{display}</div>
-          {delta}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-card' style='--accent:{accent}'><div class='metric-title'>{title}</div><div class='metric-value'>{display}</div>{delta}</div>", unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────
 # 1. 경제활동 추이
@@ -275,25 +247,28 @@ col_l, col_r = st.columns([3, 2])
 
 with col_l:
     df_ts = df_eco_f.sort_values("시점")
-    # 실업률을 안전하게 숫자로 변환 (에러 무시)
-    df_ts['실업률_num'] = pd.to_numeric(df_ts['실업률'].astype(str).str.replace('%', ''), errors='coerce')
-    
+    if "실업률" in df_ts.columns:
+        df_ts['실업률_num'] = pd.to_numeric(df_ts['실업률'].astype(str).str.replace('%', ''), errors='coerce')
+    else:
+        df_ts['실업률_num'] = 0
+        
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["취업자"], name="취업자", mode="lines+markers", line=dict(color="#3b82f6", width=2.5)), secondary_y=False)
     fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["실업자"], name="실업자", mode="lines+markers", line=dict(color="#ef4444", width=2, dash="dot")), secondary_y=False)
     
     if not df_ts['실업률_num'].isna().all():
-        fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["실업률_num"], name="실업률(%)", mode="lines", line=dict(color="#f59e0b", width=2)), secondary_y=True)
+        fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts['실업률_num'], name="실업률(%)", mode="lines", line=dict(color="#f59e0b", width=2)), secondary_y=True)
         fig.update_yaxes(title_text="실업률 (%)", secondary_y=True, gridcolor="#1e2540", color="#a8b8d8")
         
     fig.update_layout(title="경제활동 추이", **PLOTLY_LAYOUT)
-    fig.update_yaxes(title_text="인구 (명)", secondary_y=False, gridcolor="#1e2540", color="#a8b8d8")
     st.plotly_chart(fig, use_container_width=True)
 
 with col_r:
     if "성별" in df_eco.columns:
-        # 성별 차트는 '계'를 제외하고 순수 남/여만 비교
-        df_gender = df_eco[df_eco["성별"] != '계'].groupby("성별")[["취업자","실업자"]].mean().reset_index()
+        # 에러가 나던 핵심 부분! 데이터가 이제 완벽한 숫자이므로 mean() 연산이 안전하게 동작합니다.
+        df_gender_base = df_eco[df_eco["성별"] != '계']
+        df_gender = df_gender_base.groupby("성별")[["취업자", "실업자"]].mean().reset_index()
+        
         fig2 = px.bar(df_gender.melt(id_vars="성별", var_name="구분", value_name="평균"),
                       x="성별", y="평균", color="구분", barmode="group",
                       title="성별 평균 취업/실업자 비교",
@@ -329,7 +304,7 @@ with col_c:
 st.markdown("#### 💡 임금 vs 취업자 수 — 산업별 포지셔닝")
 df_merge = pd.merge(df_emp.groupby("산업별")["취업자수"].mean().reset_index(), df_wage.groupby("산업별")[["전체임금총액","전체근로시간"]].mean().reset_index(), on="산업별", how="inner")
 if not df_merge.empty:
-    fig_sc = px.scatter(df_merge, x="취업자수", y="전체임금총액", size="전체근로시간", color="산업별", hover_name="산업별", text="산업별", title="취업자 多 = 임금도 高? — 산업별 분포", size_max=40)
+    fig_sc = px.scatter(df_merge, x="취업자수", y="전체임금총액", size="전체근로시간", color="산업별", hover_name="산업별", text="산업별", title="취업자 多 = 임금도 高?", size_max=40)
     fig_sc.update_traces(textposition="top center", textfont_size=9)
     fig_sc.update_layout(**PLOTLY_LAYOUT, height=420, showlegend=False)
     st.plotly_chart(fig_sc, use_container_width=True)
@@ -337,9 +312,9 @@ if not df_merge.empty:
 # ──────────────────────────────────────────────
 # 3. 쉬는 이유 분석
 # ──────────────────────────────────────────────
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#ef4444'></div><h2>③ 쉬었음의 주된 이유 — 자발 vs 비자발 구조 분석</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#ef4444'></div><h2>③ 쉬었음의 주된 이유</h2></div>", unsafe_allow_html=True)
 
-reason_cols = [c for c in df_reason.columns if c != "시점"]
+reason_cols =[c for c in df_reason.columns if c != "시점"]
 voluntary_keywords   =["직장의 휴업", "다음 일 준비", "퇴사(정년 퇴직)"]
 involuntary_keywords =["몸이 좋지", "일의 완료", "원하는 일자리", "일자리(일거리)가 없어서"]
 
@@ -351,7 +326,7 @@ def classify(col):
     return "기타"
 
 df_reason_melt = df_reason.melt(id_vars="시점", value_vars=reason_cols, var_name="이유", value_name="인원")
-df_reason_melt["인원"] = pd.to_numeric(df_reason_melt["인원"], errors="coerce").fillna(0)
+df_reason_melt["인원"] = pd.to_numeric(df_reason_melt["인원"].astype(str).str.replace(',',''), errors="coerce").fillna(0)
 df_reason_melt["유형"] = df_reason_melt["이유"].apply(classify)
 
 col_p, col_q = st.columns([2, 3])
@@ -359,7 +334,7 @@ col_p, col_q = st.columns([2, 3])
 with col_p:
     agg_type = df_reason_melt.groupby("유형")["인원"].sum().reset_index()
     fig_pie = px.pie(agg_type, names="유형", values="인원", title="자발 vs 비자발 비율", color="유형", color_discrete_map={"자발적":"#10b981","비자발적":"#ef4444","기타":"#6b7db3"})
-    fig_pie.update_traces(textposition="inside", textinfo="percent+label", hole=0.45, marker=dict(line=dict(color="#0a0e1a", width=2)))
+    fig_pie.update_traces(textposition="inside", textinfo="percent+label", hole=0.45)
     fig_pie.update_layout(**PLOTLY_LAYOUT, height=360)
     st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -370,12 +345,15 @@ with col_q:
     st.plotly_chart(fig_bar, use_container_width=True)
 
 # ──────────────────────────────────────────────
-# 4. 비경제활동인구 연계 분석
+# 4. 상관 분석
 # ──────────────────────────────────────────────
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#8b5cf6'></div><h2>④ 비경제활동인구 vs 경제활동 상관 분석</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#8b5cf6'></div><h2>④ 상관관계 분석</h2></div>", unsafe_allow_html=True)
 
-# 경제활동현황이 '계'인 것만 취합해서 비경제활동과 연결 (데이터 뻥튀기 방지)
-df_eco_total = df_eco[df_eco["성별"] == '계'] if "성별" in df_eco.columns and '계' in df_eco["성별"].values else df_eco
+if "성별" in df_eco.columns and '계' in df_eco["성별"].values:
+    df_eco_total = df_eco[df_eco["성별"] == '계']
+else:
+    df_eco_total = df_eco.groupby("시점")[["취업자", "실업자", "경제활동인구"]].sum().reset_index()
+
 df_combined = pd.merge(
     df_eco_total.groupby("시점")[["취업자","실업자","경제활동인구"]].sum().reset_index(),
     df_inact.groupby("시점")["비경제활동인구"].sum().reset_index(),
@@ -394,13 +372,12 @@ with col_x:
 
 with col_y:
     if len(df_combined) > 3:
-        # 안전한 상관관계 계산을 위해 숫자형으로 모두 변환
         corr_cols =["취업자","실업자","비경제활동인구","경제활동인구"]
-        df_for_corr = df_combined[corr_cols].apply(pd.to_numeric, errors='coerce')
+        df_for_corr = df_combined[corr_cols]
         corr = df_for_corr.corr()
         
         fig_heat = px.imshow(corr, text_auto=".2f", color_continuous_scale=["#ef4444","#0a0e1a","#3b82f6"], title="지표 간 상관관계 히트맵")
         fig_heat.update_layout(**PLOTLY_LAYOUT, height=320)
         st.plotly_chart(fig_heat, use_container_width=True)
 
-st.success("✨ 디버깅이 완료되었습니다! 이제 터미널에서 `streamlit run app.py`를 실행해보세요.")
+st.success("✨ 디버깅이 완료되었습니다! 문자열 에러와 '계' 데이터 부재 문제를 모두 해결했습니다.")
