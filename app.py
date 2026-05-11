@@ -136,7 +136,7 @@ with st.sidebar:
     st.markdown("### 🎯 핵심 인사이트")
     st.markdown("""
     <div style='font-size:0.9rem; color:#475569; line-height:1.7; background:#f1f5f9; padding:15px; border-radius:10px;'>
-    청년층 취업자 수는 증가하지만<br>
+    청년층 경제활동인구는 증가하지만<br>
     <b style='color:#ea580c'>임금·근로시간의 질적 격차</b>와<br>
     <b style='color:#e11d48'>비자발적 비경활 비율 증가</b>가<br>
     동시에 나타나는 구조적 문제를<br>
