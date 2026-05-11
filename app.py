@@ -162,7 +162,7 @@ with st.sidebar:
     st.markdown("## ⚙️ 데이터 설정")
     db_path = st.text_input(
         "SQLite DB 파일 경로",
-        value="youth_employment.db",
+        value="economics.db",
         help="청년 고용 데이터가 담긴 .db 파일 경로를 입력하세요"
     )
     st.markdown("---")
