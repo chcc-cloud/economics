@@ -24,72 +24,104 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap');
 
 html, body, [class*="css"] { font-family: 'Noto Sans KR', sans-serif; }
-.stApp { background: #f8fafc; color: #1e293b; }
+
+/* 전체 배경: 연한 라벤더-화이트 */
+.stApp { background: #f5f4fb; color: #2d2a4a; }
+
+/* 사이드바 */
 section[data-testid="stSidebar"] {
-    background: #ffffff !important;
-    border-right: 1px solid #e2e8f0;
+    background: #faf9ff !important;
+    border-right: 1px solid #ddd8f5;
 }
+
+/* KPI 카드 */
 .metric-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border: 1px solid #e4dffa;
+    border-radius: 18px;
     padding: 24px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 14px rgba(109, 92, 201, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .metric-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 4px;
-    background: var(--accent, #3b82f6);
+    background: var(--accent, #7c6fd4);
 }
-.metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-.metric-title { font-size: 0.8rem; font-weight: 600; color: #64748b; letter-spacing: 0.05em; margin-bottom: 8px; }
-.metric-value { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: #0f172a; }
-.metric-delta { font-size: 0.85rem; margin-top: 6px; font-weight: 600; }
-.delta-up   { color: #ef4444; }
-.delta-down { color: #10b981; }
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(109, 92, 201, 0.14);
+}
+.metric-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #8b83c4;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.metric-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.95rem;
+    font-weight: 700;
+    color: #2d2a4a;
+}
+.metric-delta { font-size: 0.83rem; margin-top: 6px; font-weight: 600; }
+.delta-up   { color: #e05c7a; }
+.delta-down { color: #5ba89e; }
+
+/* 섹션 헤더 */
 .section-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 32px 0 16px 0;
+    margin: 36px 0 16px 0;
     padding-bottom: 12px;
-    border-bottom: 1px solid #cbd5e1;
+    border-bottom: 1px solid #ddd8f5;
 }
-.section-header h2 { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin: 0; }
-.section-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; }
+.section-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #2d2a4a;
+    margin: 0;
+}
+.section-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #7c6fd4;
+    flex-shrink: 0;
+}
 
 /* 차트 인사이트 박스 */
 .chart-insight {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-left: 4px solid #0ea5e9;
+    background: #efedf9;
+    border: 1px solid #cdc7ef;
+    border-left: 4px solid #7c6fd4;
     border-radius: 10px;
     padding: 14px 18px;
-    margin: 8px 0 20px 0;
-    font-size: 0.9rem;
-    line-height: 1.65;
-    color: #0c4a6e;
+    margin: 8px 0 22px 0;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #3d3868;
 }
-.chart-insight .icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
-.chart-insight b { color: #0369a1; }
+.chart-insight .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.chart-insight b { color: #5b4fc2; }
 
 /* 종합 인사이트 박스 */
 .insight-box {
-    border-radius: 12px;
-    padding: 18px 22px;
-    margin: 10px 0;
-    color: #334155;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 12px 0;
+    font-size: 0.93rem;
+    line-height: 1.7;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -100,11 +132,12 @@ section[data-testid="stSidebar"] {
 PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(255,255,255,1)",
     plot_bgcolor="rgba(255,255,255,1)",
-    font=dict(family="Noto Sans KR", color="#475569", size=12),
-    xaxis=dict(gridcolor="#f1f5f9", linecolor="#cbd5e1", tickcolor="#475569"),
-    yaxis=dict(gridcolor="#f1f5f9", linecolor="#cbd5e1", tickcolor="#475569"),
+    font=dict(family="Noto Sans KR", color="#5a5480", size=12),
+    xaxis=dict(gridcolor="#ece9f8", linecolor="#ddd8f5", tickcolor="#8b83c4"),
+    yaxis=dict(gridcolor="#ece9f8", linecolor="#ddd8f5", tickcolor="#8b83c4"),
     margin=dict(l=20, r=20, t=50, b=20),
-    legend=dict(bgcolor="rgba(255,255,255,0.8)", font=dict(color="#334155")),
+    legend=dict(bgcolor="rgba(255,255,255,0.85)", font=dict(color="#3d3868")),
+    colorway=["#7c6fd4","#a78bdb","#6baed6","#b8a9e8","#9ecae1","#c7b8f0","#74c0c8"],
 )
 
 # ──────────────────────────────────────────────
@@ -132,16 +165,16 @@ def load_table(_conn, table: str) -> pd.DataFrame:
 # 사이드바
 # ──────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## ⚙️ 데이터 설정")
+    st.markdown("## 데이터 설정")
     db_path = st.text_input("SQLite DB 파일 경로", value="economics.db")
     st.markdown("---")
-    st.markdown("### 🎯 대시보드 스토리")
+    st.markdown("### 대시보드 스토리")
     st.markdown("""
-    <div style='font-size:0.9rem; color:#475569; line-height:1.8; background:#f1f5f9; padding:15px; border-radius:10px;'>
-    <b>청년 고용의 역설</b><br><br>
+    <div style='font-size:0.9rem; color:#5a5480; line-height:1.8; background:#efedf9; padding:15px; border-radius:10px;'>
+    <b style='color:#2d2a4a'>청년 고용의 역설</b><br><br>
     취업자 수는 유지되지만<br>
-    실업률은 <b style='color:#ea580c'>급등</b>하고<br>
-    쉬는 이유의 <b style='color:#e11d48'>60%가 비자발적</b>.<br><br>
+    실업률은 <b style='color:#9b3f68'>급등</b>하고<br>
+    쉬는 이유의 <b style='color:#7c6fd4'>60%가 비자발적</b>.<br><br>
     양적 고용 뒤에 숨은<br>
     <b>질적 미스매치</b>를 추적합니다.
     </div>
@@ -180,7 +213,7 @@ make_numeric(df_inact, ["비경제활동인구"])
 # ──────────────────────────────────────────────
 st.markdown("""
 <div style='padding: 20px 0 10px 0;'>
-  <div style='font-family: Space Mono, monospace; font-size: 0.8rem; color: #3b82f6;
+  <div style='font-family: Space Mono, monospace; font-size: 0.8rem; color: #7c6fd4;
               letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 5px; font-weight: 700;'>
     Youth Labor Market Intelligence
   </div>
@@ -235,10 +268,10 @@ def delta_html(cur, prv, col, unit="", invert=False):
 
 c1, c2, c3, c4 = st.columns(4)
 cards = [
-    (c1, "취업자 수",    "취업자",       "명", False, "#3b82f6"),
-    (c2, "실업자 수",    "실업자",       "명", True,  "#ef4444"),
-    (c3, "경제활동인구", "경제활동인구", "명", False, "#10b981"),
-    (c4, "실업률",       "실업률",       "%",  True,  "#f59e0b"),
+    (c1, "취업자 수",    "취업자",       "명", False, "#7c6fd4"),
+    (c2, "실업자 수",    "실업자",       "명", True,  "#e05c7a"),
+    (c3, "경제활동인구", "경제활동인구", "명", False, "#74c0c8"),
+    (c4, "실업률",       "실업률",       "%",  True,  "#a78bdb"),
 ]
 for col_obj, title, field, unit, invert, accent in cards:
     try:
@@ -272,14 +305,14 @@ with col_l:
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["취업자"],
         name="취업자", mode="lines+markers",
-        line=dict(color="#3b82f6", width=2.5)), secondary_y=False)
+        line=dict(color="#7c6fd4", width=2.5)), secondary_y=False)
     fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["실업자"],
         name="실업자", mode="lines+markers",
-        line=dict(color="#ef4444", width=2, dash="dot")), secondary_y=False)
+        line=dict(color="#e05c7a", width=2, dash="dot")), secondary_y=False)
     if not df_ts["실업률_num"].isna().all():
         fig.add_trace(go.Scatter(x=df_ts["시점"], y=df_ts["실업률_num"],
             name="실업률(%)", mode="lines",
-            line=dict(color="#f59e0b", width=2)), secondary_y=True)
+            line=dict(color="#a78bdb", width=2)), secondary_y=True)
         fig.update_yaxes(title_text="실업률 (%)", secondary_y=True,
                          gridcolor="#e2e8f0", color="#475569")
     fig.update_layout(title="연도/월별 청년 경제활동 추이", **PLOTLY_LAYOUT)
@@ -299,7 +332,7 @@ with col_r:
             df_gender.melt(id_vars="성별", var_name="구분", value_name="평균"),
             x="성별", y="평균", color="구분", barmode="group",
             title="성별 평균 취업/실업자 비교",
-            color_discrete_map={"취업자":"#3b82f6","실업자":"#ef4444"})
+            color_discrete_map={"취업자":"#7c6fd4","실업자":"#e05c7a"})
         fig2.update_layout(**PLOTLY_LAYOUT)
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -311,7 +344,7 @@ with col_r:
 # ══════════════════════════════════════════════
 # ② 산업별 분석
 # ══════════════════════════════════════════════
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#10b981'></div><h2>② 산업별 취업자 · 임금 · 근로시간 분석</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#a78bdb'></div><h2>② 산업별 취업자 · 임금 · 근로시간 분석</h2></div>", unsafe_allow_html=True)
 
 col_a, col_b, col_c = st.columns(3)
 
@@ -319,7 +352,7 @@ with col_a:
     agg = df_emp.groupby("산업별")["취업자수"].mean().reset_index().sort_values("취업자수").tail(12)
     fig = px.bar(agg, x="취업자수", y="산업별", orientation="h",
                  title="산업별 평균 취업자수",
-                 color="취업자수", color_continuous_scale=["#dbeafe","#2563eb"])
+                 color="취업자수", color_continuous_scale=["#e0dcf8","#5b4fc2"])
     fig.update_layout(**PLOTLY_LAYOUT, coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
     insight("🏭",
@@ -330,7 +363,7 @@ with col_b:
     agg2 = df_wage.groupby("산업별")["전체임금총액"].mean().reset_index().sort_values("전체임금총액").tail(12)
     fig = px.bar(agg2, x="전체임금총액", y="산업별", orientation="h",
                  title="산업별 평균 임금",
-                 color="전체임금총액", color_continuous_scale=["#d1fae5","#059669"])
+                 color="전체임금총액", color_continuous_scale=["#d8eefb","#3b82c4"])
     fig.update_layout(**PLOTLY_LAYOUT, coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
     insight("💰",
@@ -341,7 +374,7 @@ with col_c:
     agg3 = df_wage.groupby("산업별")["전체근로시간"].mean().reset_index().sort_values("전체근로시간").tail(12)
     fig = px.bar(agg3, x="전체근로시간", y="산업별", orientation="h",
                  title="산업별 평균 근로시간",
-                 color="전체근로시간", color_continuous_scale=["#fef3c7","#d97706"])
+                 color="전체근로시간", color_continuous_scale=["#e8e2f8","#9b7fe8"])
     fig.update_layout(**PLOTLY_LAYOUT, coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
     insight("⏰",
@@ -350,7 +383,7 @@ with col_c:
         "긴 시간 일하지만 임금은 최고 수준이 아닌 <b>저효율 고용 구조</b>가 확인됩니다.")
 
 # 산점도
-st.markdown("#### 💡 임금 vs 취업자 수 — 산업별 포지셔닝")
+st.markdown("#### 임금 vs 취업자 수 — 산업별 포지셔닝")
 df_merge = pd.merge(
     df_emp.groupby("산업별")["취업자수"].mean().reset_index(),
     df_wage.groupby("산업별")[["전체임금총액","전체근로시간"]].mean().reset_index(),
@@ -374,7 +407,7 @@ if not df_merge.empty:
 # ══════════════════════════════════════════════
 # ③ 쉬는 이유 분석
 # ══════════════════════════════════════════════
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#ef4444'></div><h2>③ 청년층 쉬었음의 주된 이유</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#b8a9e8'></div><h2>③ 청년층 쉬었음의 주된 이유</h2></div>", unsafe_allow_html=True)
 
 reason_cols = [c for c in df_reason.columns if c != "시점"]
 voluntary_kw   = ["직장의 휴업", "다음 일 준비", "퇴사(정년 퇴직)"]
@@ -397,7 +430,7 @@ with col_p:
     agg_type = df_rm.groupby("유형")["인원"].sum().reset_index()
     fig_pie = px.pie(agg_type, names="유형", values="인원",
                      title="자발 vs 비자발 비율", color="유형",
-                     color_discrete_map={"자발적":"#10b981","비자발적":"#ef4444","기타":"#94a3b8"})
+                     color_discrete_map={"자발적":"#74c0c8","비자발적":"#b8a9e8","기타":"#c4bfdf"})
     fig_pie.update_traces(textposition="inside", textinfo="percent+label", hole=0.45)
     fig_pie.update_layout(**PLOTLY_LAYOUT, height=360)
     st.plotly_chart(fig_pie, use_container_width=True)
@@ -410,7 +443,7 @@ with col_q:
     agg_reason = df_rm.groupby("이유")["인원"].mean().reset_index().sort_values("인원")
     fig_bar = px.bar(agg_reason, x="인원", y="이유", orientation="h",
                      title="이유별 평균 인원",
-                     color="인원", color_continuous_scale=["#fee2e2","#e11d48"])
+                     color="인원", color_continuous_scale=["#e0dcf8","#7c3fa8"])
     fig_bar.update_layout(**PLOTLY_LAYOUT, coloraxis_showscale=False, height=360)
     st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -422,7 +455,7 @@ with col_q:
 # ══════════════════════════════════════════════
 # ④ 상관관계 분석
 # ══════════════════════════════════════════════
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#8b5cf6'></div><h2>④ 경제활동 지표 간 상관관계 분석</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#9ecae1'></div><h2>④ 경제활동 지표 간 상관관계 분석</h2></div>", unsafe_allow_html=True)
 
 if "성별" in df_eco.columns and '계' in df_eco["성별"].values:
     df_eco_total = df_eco[df_eco["성별"] == '계']
@@ -439,7 +472,7 @@ col_x, col_y = st.columns(2)
 
 with col_x:
     fig_c = go.Figure()
-    for name, color in [("취업자","#3b82f6"),("실업자","#ef4444"),("비경제활동인구","#8b5cf6")]:
+    for name, color in [("취업자","#7c6fd4"),("실업자","#e05c7a"),("비경제활동인구","#9ecae1")]:
         if name in df_combined.columns:
             fig_c.add_trace(go.Scatter(x=df_combined["시점"], y=df_combined[name],
                 name=name, mode="lines", line=dict(color=color, width=2)))
@@ -455,7 +488,7 @@ with col_y:
         corr_cols = ["취업자","실업자","비경제활동인구","경제활동인구"]
         corr = df_combined[corr_cols].corr()
         fig_heat = px.imshow(corr, text_auto=".2f",
-                              color_continuous_scale=["#ef4444","#ffffff","#3b82f6"],
+                              color_continuous_scale=["#b8a9e8","#ffffff","#6baed6"],
                               title="지표 간 상관관계 히트맵")
         fig_heat.update_layout(**PLOTLY_LAYOUT, height=320)
         st.plotly_chart(fig_heat, use_container_width=True)
@@ -468,24 +501,25 @@ with col_y:
 # ══════════════════════════════════════════════
 # ⑤ 종합 인사이트
 # ══════════════════════════════════════════════
-st.markdown("<div class='section-header'><div class='section-dot' style='background:#f59e0b'></div><h2>⑤ 종합 인사이트 — 청년 고용의 구조적 문제</h2></div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'><div class='section-dot' style='background:#6baed6'></div><h2>⑤ 종합 인사이트 — 청년 고용의 구조적 문제</h2></div>", unsafe_allow_html=True)
 
 st.markdown("""
-<div class='insight-box' style='background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #3b82f6;'>
+<div class='insight-box' style='background:#efedf9; border:1px solid #cdc7ef; border-left:4px solid #7c6fd4; color:#2d2a4a;'>
 📌 <strong>인사이트 1. 취업자 증가 ≠ 고용의 질 개선</strong><br>
 취업자 1위 산업(제조업)은 근로시간 2위이지만 임금은 중간 수준. 청년이 몰리는 곳일수록
 <b>긴 시간 일하고 적게 받는 구조</b>가 고착화되고 있습니다.
 </div>
-<div class='insight-box' style='background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #ef4444;'>
+<div class='insight-box' style='background:#f5eef8; border:1px solid #d8b8e8; border-left:4px solid #b8a9e8; color:#2d2a4a;'>
 📌 <strong>인사이트 2. 비자발적 쉬었음 60% — 선택이 아닌 구조적 배제</strong><br>
 실업자로 집계되지 않지만 <b>"원하는 일자리가 없어서"</b> 쉬고 있는 청년이 가장 많습니다.
 표면 실업률이 낮아도 <b>고용 미스매치는 심각</b>한 상태입니다.
 </div>
-<div class='insight-box' style='background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #10b981;'>
-📌 <strong>인사이트 3. 고임금 산업(D·K)으로의 청년 진입 장벽 해소 필요</strong><br>
-전기가스·금융보험은 최고 임금이지만 취업자 수가 적습니다.
-청년이 접근 가능한 <b>양질 일자리 공급 확대</b>가 미스매치 해소의 핵심입니다.
+<div class='insight-box' style='background:#f0f4fc; border:1px solid #c7d8f0; border-left:4px solid #6baed6; color:#2d2a4a;'>
+📌 <strong>인사이트 3. 청년이 몰리는 산업일수록 임금 대비 근로시간이 길다</strong><br>
+취업자가 가장 많은 C(제조업)는 근로시간 상위권이면서 임금은 중간 수준에 그칩니다.
+청년 고용이 집중된 산업의 <b>근로 여건 개선 — 임금 인상 또는 근로시간 단축</b>이
+고용의 질을 높이는 직접적인 정책 과제입니다.
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<br><br><div style='text-align:center; color:#94a3b8; font-size:0.85rem;'>Youth Labor Market Dashboard · Built with Streamlit & Plotly</div>", unsafe_allow_html=True)
+st.markdown("<br><br><div style='text-align:center; color:#8b83c4; font-size:0.85rem;'>Youth Labor Market Dashboard · Built with Streamlit & Plotly</div>", unsafe_allow_html=True)
