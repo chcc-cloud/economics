@@ -197,7 +197,7 @@ if not os.path.exists(db_path):
 conn = get_conn(db_path)
 
 try:
-    df_eco    = load_table(conn, "경제활동동현황")
+    df_eco    = load_table(conn, "경제활동현황")
     df_inact  = load_table(conn, "비경제활동인구")
     df_wage   = load_table(conn, "산업별_임금_및_근로시간")
     df_emp    = load_table(conn, "산업별_취업자")
@@ -226,7 +226,7 @@ st.markdown("""
 st.markdown("---")
 
 # ──────────────────────────────────────────────
-# 성별 필터 (경제활동동현황에 성별 컬럼이 있는 경우)
+# 성별 필터 (경제활동현황에 성별 컬럼이 있는 경우)
 # ──────────────────────────────────────────────
 genders = ["전체"] + sorted(df_eco["성별"].dropna().unique().tolist()) if "성별" in df_eco.columns else ["전체"]
 selected_gender = st.selectbox("성별 필터", genders, index=0)
