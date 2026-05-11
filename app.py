@@ -380,4 +380,4 @@ with col_y:
         fig_heat.update_layout(**PLOTLY_LAYOUT, height=320)
         st.plotly_chart(fig_heat, use_container_width=True)
 
-st.success("✨ 디버깅이 완료되었습니다! 문자열 에러와 '계' 데이터 부재 문제를 모두 해결했습니다.")
+
